@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abichuela - Tienda Electrónica</title>
+<style>
+:root {
+  --primary: #111;
+  --accent: #ffd700;
+  --muted: #777;
+  --border: #ddd;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #f8f8f8; color: #111; }
+
+header {
+  background: var(--primary);
+  color: white;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.logo { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.mark { background: var(--accent); color: var(--primary); padding: 6px 10px; font-weight: 900; border-radius: 4px; }
+.brand { font-size: 20px; font-weight: 700; }
+
+.searchWrap { flex: 1; min-width: 300px; }
+.search { display: flex; gap: 8px; }
+.search select { padding: 8px; border-radius: 6px; border: 1px solid var(--border); }
+.search input { flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); }
+.search button { background: var(--accent); border: 0; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+
+.cartBtn {
+  position: relative;
+  background: var(--accent);
+  color: var(--primary);
+  border: 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.cartCount {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #c00;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.categories {
+  background: white;
+  padding: 12px 20px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+}
+.categories button {
+  background: white;
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.categories button:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+main { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s;
+}
+.card:hover { transform: translateY(-4px); }
+
+.thumb {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card .title {
+  padding: 12px 12px 6px 12px;
+  font-weight: 700;
+  font-size: 15px;
+}
+.card .muted {
+  padding: 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.card .price {
+  padding: 8px 12px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent);
+}
+.card .btns {
+  padding: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  border: 0;
+  transition: all 0.2s;
+}
+.btn.ghost {
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--primary);
+}
+.btn.ghost:hover {
+  background: #f5f5f5;
+}
+.btn.yellow {
+  background: var(--accent);
+  color: var(--primary);
+}
+.btn.yellow:hover {
+  background: #ffed4e;
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 100%;
+  max-width: 450px;
+  height: 100vh;
+  background: white;
+  box-shadow: -2px 0 16px rgba(0,0,0,0.2);
+  transition: right 0.3s;
+  overflow-y: auto;
+  z-index: 1000;
+  padding: 20px;
+}
+.panel.show { right: 0; }
+
+.panel h3 {
+  margin-bottom: 16px;
+  font-size: 20px;
+}
+
+.cart-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.cart-row img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.cart-row .meta { flex: 1; }
+.qty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.qty button {
+  background: var(--accent);
+  border: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+}
+
+.detail-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.detail-modal.show { display: flex; }
+
+.detail-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.detail-header {
+  position: sticky;
+  top: 0;
+  background: white;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #666;
+  line-height: 1;
+}
+
+.detail-body {
+  padding: 20px;
+}
+
+.product-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.product-image {
+  background: #f5f5f5;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.product-info h2 {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+
+.product-info .category {
+  color: var(--muted);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.product-info .price {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+
+.product-info .description {
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.product-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.similar-section {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+
+.similar-section h3 {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.similar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.similar-card {
+  background: #f9f9f9;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.similar-card:hover {
+  transform: translateY(-2px);
+}
+
+.similar-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+.similar-card .info {
+  padding: 10px;
+}
+
+.similar-card .name {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.similar-card .price {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+@media (max-width: 768px) {
+  .product-main {
+    grid-template-columns: 1fr;
+  }
+  .similar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="resetView()">
+    <div class="mark">AJLAD</div>
+    <div class="brand">Abichuela</div>
+  </div>
+
+  <div class="searchWrap">
+    <div class="search">
+      <select id="catSelect" onchange="aplicarCategoriaDesdeSelect()">
+        <option value="todos">Todas las categorías</option>
+        <option value="celulares">Celulares</option>
+        <option value="laptops">Laptops</option>
+        <option value="audifonos">Audífonos</option>
+        <option value="bocinas">Bocinas</option>
+        <option value="tv">Televisiones</option>
+        <option value="relojes">Smartwatch</option>
+        <option value="accesorios">Accesorios</option>
+      </select>
+      <input id="q" type="search" placeholder="Buscar productos..." oninput="buscar()" />
+      <button onclick="buscar()">🔍</button>
+    </div>
+  </div>
+
+  <button class="cartBtn" onclick="toggleCart()">
+    🛒 Carrito
+    <span class="cartCount" id="cartCount">0</span>
+  </button>
+</header>
+
+<nav class="categories">
+  <button onclick="filtrar('todos')">Todos</button>
+  <button onclick="filtrar('celulares')">Celulares</button>
+  <button onclick="filtrar('laptops')">Laptops</button>
+  <button onclick="filtrar('audifonos')">Audífonos</button>
+  <button onclick="filtrar('bocinas')">Bocinas</button>
+  <button onclick="filtrar('tv')">Televisiones</button>
+  <button onclick="filtrar('relojes')">Smartwatch</button>
+  <button onclick="filtrar('accesorios')">Accesorios</button>
+</nav>
+
+<main>
+  <section id="hero" style="margin-bottom:18px">
+    <div style="background:linear-gradient(90deg,#111 0%, #222 30%, transparent 100%); color:white; padding:18px; border-radius:12px; display:flex;align-items:center;gap:20px;">
+      <div style="flex:1">
+        <h2 style="margin:0 0 6px 0">Ofertas semanales en electrónica</h2>
+        <p style="margin:0;color:#ddd">Busca tu próximo celular, laptop o accesorio con envío rápido.</p>
+      </div>
+      <div style="min-width:160px;text-align:right">
+        <button class="btn yellow" onclick="filtrar('celulares')">Ver celulares</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="productosGrid" class="grid"></section>
+
+  <div id="emptyNotice" class="empty" style="display:none">
+    No se encontraron productos que coincidan con tu búsqueda.
+  </div>
+</main>
+
+<!-- CART PANEL -->
+<aside id="cartPanel" class="panel">
+  <h3>Tu carrito</h3>
+  <div id="cartItems"></div>
+  <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+    <strong>Total:</strong>
+    <strong id="cartTotal">$0</strong>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:8px">
+    <button class="btn ghost" onclick="vaciarCarrito()">Vaciar</button>
+    <button class="btn yellow" onclick="checkout()">Pagar</button>
+  </div>
+</aside>
+
+<!-- DETAIL MODAL -->
+<div id="detailModal" class="detail-modal" onclick="closeDetailIfBackdrop(event)">
+  <div class="detail-content" onclick="event.stopPropagation()">
+    <div class="detail-header">
+      <h3>Detalle del producto</h3>
+      <button class="close-btn" onclick="cerrarDetalle()">&times;</button>
+    </div>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
+</div>
+
+<script>
+const products = [
+  // Celulares (1 ejemplo)
+  { id:101, nombre:"iPhone 14", precio:10999, categoria:"celulares", img:"https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-14-finish-select-202209-6-7inch-midnight?wid=2560&hei=1440&fmt=jpeg&qlt=95&.v=1661027925267", descripcion:"Pantalla Super Retina XDR de 6.1 pulgadas con True Tone. Sistema de cámara dual avanzado con fotos de 12 MP. Chip A15 Bionic con GPU de 5 núcleos para un rendimiento ultrarrápido. Batería de larga duración y carga rápida. Resistente al agua y al polvo (IP68)." },
+   { id:102, nombre:"Samsung Galaxy S23", precio:8999, categoria:"celulares", img:"https://i5.walmartimages.com.mx/mg/gm/3pp/asr/c4ec36d3-596f-42b2-9f1b-a598634492ae.966f25ffbf28b6b391b462f215a5c84d.png?odnHeight=2000&odnWidth=2000&odnBg=ffffff", descripcion:"Pantalla AMOLED, rendimiento top." },
+  { id:103, nombre:"Xiaomi Redmi Note 12", precio:4999, categoria:"celulares", img:"https://tse1.mm.bing.net/th/id/OIP.Lr7c-bPMrhDTdqCdJTcYwQHaHa?rs=1&pid=ImgDetMain&o=7&rm=3", descripcion:"Buen rendimiento y batería larga duración." },
+  { id:104, nombre:"Samsumng A34 5G", precio:6499, categoria:"celulares", img:"https://tse2.mm.bing.net/th/id/OIP.-7FialhfHJabSvMsgWS2YAHaHa?rs=1&pid=ImgDetMain&o=7&rm=3", descripcion:"Buen rendimiento y batería larga duración." },
+  { id:105, nombre:"iPhone 16 Pro Max ", precio:15199, categoria:"celulares", img:"https://cdn.shopify.com/s/files/1/0670/7688/2653/files/86fb9f06-1525-4b23-b257-805885ac798a-1_d60e4f68-d823-4bc0-b840-16b850cb12fa.png?v=1727445542", descripcion:"Buen rendimiento y batería larga duración." },
+  { id:106, nombre:"Xiaomi Redmi Note 14", precio:5899, categoria:"celulares", img:"https://tse1.mm.bing.net/th/id/OIP.Qobkvh9zHFlT7tYWpY1bbwHaHa?rs=1&pid=ImgDetMain&o=7&rm=3", descripcion:"Buen rendimiento y batería larga duración." },
+  { id:107, nombre:"Samsumng Galaxy S24", precio:7499, categoria:"celulares", img:"https://static1.anpoimages.com/wordpress/wp-content/uploads/2024/01/galaxy-s24-ultra-titanium-violet.png", descripcion:"Buen rendimiento y batería larga duración." },
+  { id:108, nombre:"Iphone 15 ", precio:11200, categoria:"celulares", img:"https://th.bing.com/th/id/R.6f741d98cbfb8c15b0f95e217b729867?rik=u4%2fDe%2b%2fYomNfJw&riu=http%3a%2f%2fcatalogo.claro.com.ec%2fuploads%2fimgs%2fproductos%2fiphone-13-128gb%2fazul%2fzoom%2f01-iphone-13-128gb-azul-front.png&ehk=Yfb%2b6%2f4wBEtpiaUVblK7iJvkpfhGr%2f4uQqIOWqVRiRg%3d&risl=&pid=ImgRaw&r=0", descripcion:"Buen rendimiento y batería larga duración." },
+  { id:109, nombre:"Samsumng A36 5G", precio:7999, categoria:"celulares", img:"https://m.media-amazon.com/images/I/31ZhKmcttQL.SL500.jpg", descripcion:"Buen rendimiento y batería larga duración." },
+  { id:110, nombre:"Motorola Moto G75", precio:4499, categoria:"celulares", img:"https://i5.walmartimages.com/asr/6ca00388-2241-4e82-a901-baaee1302c80.12bfed346b640ebf5c1410e107836c1d.jpeg?odnHeight=612&odnWidth=612&odnBg=FFFFFF", descripcion:"Buen rendimiento y batería larga duración." },
+  { id:111, nombre:"Samsumng  Galaxy A56", precio:7099, categoria:"celulares", img:"https://i5.walmartimages.com/asr/5ee0a6d6-d99b-4d51-9f79-1777f0ccf73a.a0ae9548b930e1f09c52036b11dddeda.jpeg?odnHeight=612&odnWidth=612&odnBg=FFFFFF", descripcion:"Buen rendimiento y batería larga duración." },
+  { id:112, nombre:"iPhone 17 Pro Max ", precio:28999, categoria:"celulares", img:"https://i5.walmartimages.com/asr/e90732e7-83b8-4636-9e39-ec180aaa48a4.e5fcda6f0d41d7b5325f557a76a8b40f.jpeg?odnHeight=612&odnWidth=612&odnBg=FFFFFF", descripcion:"Buen rendimiento y batería larga duración." },
+  { id:113, nombre:"Motorola Moto G86", precio:4499, categoria:"celulares", img:"https://i5.walmartimages.com/asr/d43f186a-4f10-402f-9f04-4a823e484bb8.cc3092124ebd095e488d801b9ee90a86.jpeg?odnHeight=768&odnWidth=768&odnBg=FFFFFF", descripcion:"Buen rendimiento y batería larga duración." },
+  { id:114, nombre:"Xiaomi Redmi A5 ", precio:1999, categoria:"celulares", img:"https://i5.walmartimages.com/asr/4ece6364-3587-47b8-9ade-75831e6a7ea9.4c40a75092de23af3bdf2fe2dceb4228.jpeg?odnHeight=612&odnWidth=612&odnBg=FFFFFF", descripcion:"Buen rendimiento y batería larga duración." },
+
+  // Laptops (1 ejemplo)
+  { id:201, nombre:"MacBook Air M1 - 13\"", precio:21999, categoria:"laptops", img:"https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=4f0b8e8b94a4f2e2d4a3b1c2b6d7e8f0", descripcion:"Chip Apple M1 revolucionario con CPU de 8 núcleos. Pantalla Retina de 13.3 pulgadas con tecnología True Tone. Hasta 18 horas de batería. 8GB de RAM unificada y SSD de 256GB. Diseño ultraligero de solo 1.29 kg. Sin ventilador para funcionamiento silencioso." },
+  { id:202, nombre:"Laptop HP Ryzen 5 - 8GB", precio:13999, categoria:"laptops", img:"https://i5.walmartimages.com/asr/1d9d6ff9-0263-43ff-96e0-2ab40f5e6dc0.8a20e78805d52df7b5818cfc0a8fae81.jpeg", descripcion:"Ideal para productividad y estudio." },
+  { id:203, nombre:"Laptop HP Pavilion Aero 13-bg0000la", precio:19799, categoria:"laptops", img:"https://i5.walmartimages.com/asr/1d318649-726f-4229-8bef-75bf607ef421.7be295de61590f04cd6246e4ffd47cb5.png?odnHeight=612&odnWidth=612&odnBg=FFFFFF", descripcion:"Ideal para productividad y estudio." },
+  { id:204, nombre:"Laptop HP OMEN 14-fb0004la Intel Core Ultra 9", precio:41209, categoria:"laptops", img:"https://i5.walmartimages.com/asr/67664176-b21e-49b6-809e-66dff1349b2a.9186dd48c1cf33ba7d5228ed95f1f0ba.png?odnHeight=612&odnWidth=612&odnBg=FFFFFF", descripcion:"Ideal para productividad y estudio." },
+  { id:205, nombre:"Laptop HP Victus Gaming 15-fb2002la AMD Ryzen 5", precio:13459, categoria:"laptops", img:"https://i5.walmartimages.com/asr/6458c9e3-2175-49b9-bd0e-3164bf216967.1d02c4f689f3607fbd03c24a87b1c45e.png?odnHeight=612&odnWidth=612&odnBg=FFFFFF", descripcion:"Ideal para productividad y estudio." },
+  { id:206, nombre:"Laptop HP Pavilion Plus 14-ew0001la, 14, Intel Core i5", precio:14799, categoria:"laptops", img:"https://i5.walmartimages.com/asr/9e89c080-9bf7-4fe1-a903-b072c57ea1e4.a161a4131b0c21cc37567864c5711f68.jpeg?odnHeight=612&odnWidth=612&odnBg=FFFFFF", descripcion:"Ideal para productividad y estudio." },
+  { id:207, nombre:"Laptop HP 240R G10 Intel Core Ultra 7", precio:22999, categoria:"laptops", img:"https://i5.walmartimages.com/asr/083437e2-51d2-4c32-8057-ecd5e672e502.70b7a7b2b6db678f8b6b8a27a08a9939.png?odnHeight=612&odnWidth=612&odnBg=FFFFFF", descripcion:"Ideal para productividad y estudio." },
+  { id:208, nombre:"Laptop Lenovo ThinkBook 14IIL", precio:13599, categoria:"laptops", img:"https://i5.walmartimages.com/asr/bf1201fe-d431-4f82-b1a0-0177f4fe2f34.ace4491a8454fa07b7348eecc7e7da89.jpeg?odnHeight=612&odnWidth=612&odnBg=FFFFFF", descripcion:"Ideal para productividad y estudio." },
+  { id:209, nombre:"Laptop HP 14-ep0252la", precio:11999, categoria:"laptops", img:"https://i5.walmartimages.com/asr/f46194e1-a015-4450-ba2d-143eac235950.fc1c503475d1278552a0324cf4f1968b.jpeg?odnHeight=612&odnWidth=612&odnBg=FFFFFF", descripcion:"Ideal para productividad y estudio." },
+  { id:210, nombre:"Laptop HP 245 G10 14", precio:11999, categoria:"laptops", img:"https://i5.walmartimages.com/asr/da5eba9f-5634-4ff7-bc3f-9330cb05ec4e.27b8ed35eb619b4ea50f155494e7cf8a.jpeg?odnHeight=612&odnWidth=612&odnBg=FFFFFF", descripcion:"Ideal para productividad y estudio." },
+  { id:211, nombre:"Laptop HP 14", precio:5999, categoria:"laptops", img:"https://i5.walmartimages.com/asr/a7ce2fcd-1206-48b3-a9d7-c242ba794282.8734ab9442393b275e6b903e2b618b2b.png?odnHeight=612&odnWidth=612&odnBg=FFFFFF", descripcion:"Ideal para productividad y estudio." },
+
+  // Audífonos (1 ejemplo)
+  { id:301, nombre:"AirPods Pro (2ª gen)", precio:4499, categoria:"audifonos", img:"https://imgs.search.brave.com/T4uDP6vzp-fOQgtyd7jqSp33CHEvbMohJd_ZiverMuM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90aWVu/ZGEubW92aXN0YXIu/Y29tLm14L21lZGlh/L2NhdGFsb2cvcHJv/ZHVjdC9jYWNoZS8w/ODdkODY1NmI5M2Iz/Nzg0NDlhYWQ3ZGUz/N2MzZDA0ZS9hL2kv/YWlycG9kcy5wbmc", descripcion:"Cancelación Activa de Ruido mejorada hasta el doble. Audio Espacial Personalizado con seguimiento dinámico de la cabeza. Modo Ambiente adaptativo. Chip H2 para audio de alta calidad. Hasta 6 horas de reproducción con cancelación de ruido. Estuche con altavoz integrado y USB-C." },
+  { id:302, nombre:"Sony WH-1000XM4", precio:7499, categoria:"audifonos", img:"https://i.ebayimg.com/images/g/nr4AAOSwOQdjFfap/s-l640.jpg", descripcion:"Gran calidad de sonido y confort." },
+  { id:303, nombre:"Sony WH-1000XM5", precio:7999, categoria:"audifonos", img:"https://m.media-amazon.com/images/I/51aXvjzcukL.AC_SX522.jpg", descripcion:"Cancelación de ruido líder y diseño más ligero." },
+  { id:304, nombre:"Bose QuietComfort Ultra", precio:8499, categoria:"audifonos", img:"https://m.media-amazon.com/images/I/51f7KKP25PL.AC_SX522.jpg", descripcion:"Audio espacial y comodidad premium." },
+  { id:305, nombre:"Sonos Ace", precio:8999, categoria:"audifonos", img:"https://m.media-amazon.com/images/I/61mOR017+fL.AC_SY300_SX300_QL70_ML2.jpg", descripcion:"Sonido envolvente con diseño minimalista." },
+  { id:306, nombre:"Beats Studio Pro", precio:7499, categoria:"audifonos", img:"https://m.media-amazon.com/images/I/516ZqYIXKGL.AC_SY300_SX300_QL70_ML2.jpg", descripcion:"Alta fidelidad y compatibilidad con Apple y Android." },
+  { id:307, nombre:"Sennheiser Momentum 4", precio:7999, categoria:"audifonos", img:"https://m.media-amazon.com/images/I/716++4xC2wL.AC_SY300_SX300_QL70_ML2.jpg", descripcion:"Calidad de estudio y batería de larga duración." },
+  { id:308, nombre:"Nothing Ear (2)", precio:2999, categoria:"audifonos", img:"https://m.media-amazon.com/images/I/414fo42VreL.AC_SX425.jpg", descripcion:"Diseño transparente y sonido personalizado." },
+  { id:309, nombre:"Pixel Buds Pro", precio:4499, categoria:"audifonos", img:"https://m.media-amazon.com/images/I/61DGBXMDMpL.AC_SY355.jpg", descripcion:"Integración con Android y cancelación de ruido." },
+
+  // Bocinas (1 ejemplo)
+  { id:401, nombre:"Bocina JBL Flip 5", precio:1299, categoria:"bocinas", img:"https://imgs.search.brave.com/pWoVSOA2hzT6P10WVyfWAFQLkBhx9_ZwVcBzixMc7Nk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9odHRw/Mi5tbHN0YXRpYy5j/b20vRF9RX05QXzJY/Xzc3MjAxNC1NTE03/MTc1NDY4MTg5Ml8w/OTIwMjMtVi1qYmwt/ZmxpcDQtYWx0YXZv/ei1wb3J0YXRpbC1j/b24tYmx1ZXRvb3Ro/LWJhdGVyaWEtaW50/ZWdyYWRhLndlYnA", descripcion:"Sonido potente y envolvente de 20W. Batería de larga duración hasta 12 horas. Resistente al agua IPX7, perfecta para exteriores. Conecta hasta 2 smartphones simultáneamente. PartyBoost para vincular múltiples bocinas JBL compatibles. Diseño compacto y portátil." },
+  { id: 402, nombre: "Bocina JBL Flip 6", precio: 2700, categoria: "bocinas", img: "https://imgs.search.brave.com/dAqschfFbLhQW7bvlUiDfXj1avRe__pN92cuCmob3yw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pNS53/YWxtYXJ0aW1hZ2Vz/LmNvbS5teC9tZy9n/bS8zcHAvYXNyLzEz/OTg0NjNhLTI5Y2Yt/NGVkOS1iZmU1LTUz/NmYzYWQ4Y2JiNC44/ZmI0YjBhYTAwOTQy/NDJhZjQ1Y2IzNDkw/MjU0M2NiOC5qcGVn/P29kbkhlaWdodD02/MTImb2RuV2lkdGg9/NjEyJm9kbkJnPUZG/RkZGRg", descripcion: "30 W, IP67, 12 h de batería." },
+  { id: 403, nombre: "Bocina JBL Flip 7", precio: 3000, categoria: "bocinas", img: "https://coolboxmx.vtexassets.com/arquivos/ids/165914-800-800?v=638850986530600000&width=800&height=800&aspect=true", descripcion: "Nueva generación, diseño más robusto." },
+  { id: 404, nombre: "Bocina JBL Flip Essential", precio: 2349, categoria: "bocinas", img: "https://imgs.search.brave.com/Qz1LryYpCXHgOY5-s-5o3NxZ_tv0bqE6KzAfI7-CDMk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/b2ZmaWNlZGVwb3Qu/Y29tLm14L21lZGlh/cy81MTVmdHctMTAw/MTgwOTE4LTIuanBn/P2NvbnRleHQ9YldG/emRHVnlmSEp2YjNS/OE5qWTFOVE44YVcx/aFoyVXZhbkJsWjN4/aFJGRXdUREpuTUU5/VE9IaE5ha2w0VGtS/Wk0wNUVWVFJPZWxr/elQwTTRNVTFVVm0x/a1NHUm1UVlJCZDAx/VVozZFBWRVUwVEZS/SmRXRnVRbTU4T1RG/bFpEQTRNemRpTXpn/ell6RTJaV1l3WTJZ/NE0yRmpOV0kzTkRB/M05UQXpZbVEzTWpR/M09UTTNZV1kzWkRG/ak5EUXpaakUxTUdF/NU16QmxNV0ZsT0E", descripcion: "Compacta, básica y portátil." },
+  { id: 405, nombre: "Bocina JBL Pulse 5", precio: 3649, categoria: "bocinas", img: "https://imgs.search.brave.com/RHzaKFGXW57W4Jv63pv9H58m1PJX5Kb8GKI1HlwFgv4/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9kb3Rv/LnZ0ZXhhc3NldHMu/Y29tL2FycXVpdm9z/L2lkcy8yODE1NDAt/ODAwLTgwMD92PTYz/ODE2NDg2MTk4MTE3/MDAwMCZ3aWR0aD04/MDAmaGVpZ2h0PTgw/MCZhc3BlY3Q9dHJ1/ZQ", descripcion: "Luces LED que reaccionan a la música." },
+  { id: 406, nombre: "Bocina JBL Pulse 4", precio: 8490, categoria: "bocinas", img: "https://imgs.search.brave.com/NOnIMNsGGzIHxkE_laMSSvV_ULkUIomndMDxrPK9QOM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/b2ZmaWNlZGVwb3Qu/Y29tLm14L21lZGlh/cy8xMDAwNTk1NTIt/My5qcGctNTE1ZnR3/P2NvbnRleHQ9YldG/emRHVnlmSEp2YjNS/OE5EQXpPVGw4YVcx/aFoyVXZhbkJsWjN4/b01EQXZhRGN6THpF/d01qZ3hPREUwTnpV/ek16RXdMekV3TURB/MU9UVTFNaTB6TG1w/d1oxODFNVFZtZEhk/OFpqRXpaRFJpTURk/aU1XWXpOek0zWW1S/bE9ERXlObUptWkda/aU5tRmpORFZqTUdZ/elltVmtNVEZpTURF/Mk9UbGxPREkyTkRo/a1pHWm1PRGhpWVdJ/MlpB", descripcion: "Sonido 360°, visuales LED." },
+  { id: 407, nombre: "Bocina JBL Boombox 3", precio: 1262, categoria: "bocinas", img: "https://imgs.search.brave.com/4k0Xfytsi0PK-SZ10ATmDVjvek9WSKCClXj0fac_ZM0/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pNS53/YWxtYXJ0aW1hZ2Vz/LmNvbS5teC9zYW1z/bXgvaW1hZ2VzL3By/b2R1Y3QtaW1hZ2Vz/L2ltZ19sYXJnZS85/ODEwMDQwNTVsLmpw/Zz9vZG5IZWlnaHQ9/NjEyJm9kbldpZHRo/PTYxMiZvZG5CZz1G/RkZGRkY", descripcion: "Potente y para fiestas grandes." },
+  { id: 408, nombre: "Bocina JBL Charge 5", precio: 2300, categoria: "bocinas", img: "https://imgs.search.brave.com/KRg9MJNDa8fGHchE8jxqNqWLrHx0M4T_Kgvx1Omo5aw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9odHRw/Mi5tbHN0YXRpYy5j/b20vRF9RX05QXzJY/XzkzNzY4Ni1NTEE3/NDc4MjY1Nzg5N18w/MjIwMjQtVi1ib2Np/bmEtamJsLWNoYXJn/ZS01LXBvcnRhdGls/LXdhdGVycHJvb2Yt/Z3JleS0xMTB2MjIw/di53ZWJw", descripcion: "Batería de 20 h, se puede usar como power bank." },
+  { id: 409, nombre: "Bocina JBL Charge 6", precio: 3800, categoria: "bocinas", img: "https://coolboxmx.vtexassets.com/arquivos/ids/165863-800-800?v=638850863903900000&width=800&height=800&aspect=true", descripcion: "28 h de reproducción, muy robusta." },
+  { id: 410, nombre: "Bocina JBL Xtreme 3", precio: 5000, categoria: "bocinas", img: "https://imgs.search.brave.com/68osZApiDjWc0uAR0eopuXFqgIawZcYSf-rq9evXhRc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9odHRw/Mi5tbHN0YXRpYy5j/b20vRF9OUV9OUF84/MjkyNjYtTUxVNzQ5/NzE5MTY5NTNfMDMy/MDI0LU8ud2VicA", descripcion: "Sonido potente, IP67, para reuniones." },
+  { id: 411, nombre: "Bocina JBL Clip 4", precio: 1345, categoria: "bocinas", img: "https://imgs.search.brave.com/DjQD-DiCfqIEWwpK5HYwtCp5AEzASJuaGHwMUnWUoWk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9odHRw/Mi5tbHN0YXRpYy5j/b20vRF9RX05QXzJY/XzYxMTMwNi1NTE04/MjcyNDc1NTY5NF8w/MzIwMjUtVi1ib2Np/bmEtcG9ydGF0aWwt/aW5hbGFtYnJpY28t/amJsLWNsaXAtNC1i/bHVldG9vdGgtNS13/LXJtcy1hLndlYnA", descripcion: "Muy portátil, se puede enganchar." },
+  { id: 412, nombre: "Bocina JBL Go 3", precio: 685, categoria: "bocinas", img: "https://imgs.search.brave.com/JNS8C4dsjMBIZLWsC0NAg9PBxbf-cTczLQDigE1QWS0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL1Mv/YXBsdXMtbWVkaWEt/bGlicmFyeS1zZXJ2/aWNlLW1lZGlhLzg3/ZjE1ODkxLTZlNmYt/NDc2Mi05NjlkLWNj/YTlhMTQ5YzhhNy5f/X0NSMCwwLDIwMDAs/MjAwMF9QVDBfU1gz/MDBfVjFfX18uanBn", descripcion: "Pequeña, resistente, ideal para viajes." },
+  { id: 413, nombre: "Bocina JBL Go 4", precio: 1200, categoria: "bocinas", img: "https://imgs.search.brave.com/Oq3IqRvfK3bDha2rKSnkoI6w_ZNTHtG8SemcJdfLAoQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9odHRw/Mi5tbHN0YXRpYy5j/b20vRF9OUV9OUF82/ODQ1NzktTUxVNzc5/NzI1MzE5MTdfMDcy/MDI0LU8ud2VicA", descripcion: "Diseño moderno, IP67, ecológica." },
+ 
+  // TV (1 ejemplo)
+  { id:501, nombre:"Samsung 50\" 4K", precio:8499, categoria:"tv", img:"https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=800&auto=format&fit=crop&q=80", descripcion:"Smart TV 4K UHD de 50 pulgadas. Procesador Crystal 4K para optimización de imagen. HDR para mayor contraste y colores vibrantes. Tizen OS con acceso a todas las apps de streaming. Control por voz integrado. Diseño sin marcos para mayor inmersión." },
+   { id: 501, nombre: "LG OLED evo G5 65″", precio: 33245, categoria: "tv", tamaño: 65, tipo: "OLED",img:"https://imgs.search.brave.com/oX59I6B_G6uXr_9QaJ_kCpPgEoy7UbpdeYn6zKw6J3A/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly93d3cu/YXRsYXNmZXJuc2Vo/ZGllbnN0LmRlL3dw/LWNvbnRlbnQvdXBs/b2Fkcy8yMDI1LzAy/L09MRUQ1NUc1OUxT/XzAxLmpwZw", descripcion: "Negros perfectos, AI α11, ideal para cine y gaming." },
+  { id: 502, nombre: "Samsung Neo QLED QN90D 55″", precio: 26999, categoria: "tv", tamaño: 55, tipo: "Neo QLED",img:"https://imgs.search.brave.com/gy85FXadcIyn3oUx4HZqlHlC1e9c27lR4m-rjv4DF5Q/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NDErY1hIVFc0ckwu/anBn", descripcion: "Mini-LED, 4K, 144 Hz, gran brillo." },
+  { id: 503, nombre: "TCL QLED Google TV 55″", precio: 10727, categoria: "tv", tamaño: 55, tipo: "QLED",img:"https://imgs.search.brave.com/0Vk7vW3hPIS4_jg-D8vlHzrTbCwpEbLNOU_iGRBsJPY/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5mYWxhYmVsbGEu/Y29tL2ZhbGFiZWxs/YUNMLzE3NDM3OTQ1/XzEvdz02NTAsaD02/NTAsZml0PXBhZA", descripcion: "Google TV, buena relación calidad precio." },
+  { id: 504, nombre: "Hisense QLED Fire TV 65″", precio: 6799, categoria: "tv", tamaño: 65, tipo: "QLED",img:"https://imgs.search.brave.com/3ezdx_-UpV-2w5BUXXSqACZ4GrsSWrxBrQs2B_RS1Dw/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9odHRw/Mi5tbHN0YXRpYy5j/b20vRF9OUV9OUF82/MDcwNDEtTUxBNzcy/MTc0MzQ1OTZfMDcy/MDI0LU8ud2VicA", descripcion: "Fire TV integrado, económico y versátil." },
+  { id: 505, nombre: "LG UHD AI 4K 75″", precio: 6999, categoria: "tv", tamaño: 75, tipo: "LED",img:"https://imgs.search.brave.com/dIWVzdqjLvVC95FhVyRB261mUodv9-pN67xnDZlLwKY/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly93d3cu/bGcuY29tL2NvbnRl/bnQvZGFtL2NoYW5u/ZWwvd2Ntcy9lcy9p/bWFnZXMvdGVsZXZp/c2lvbi83NXV0ODAw/MDZsYV9hZXVfZWVl/c19lc19jL2dhbGxl/cnkvbGFyZ2UwMi0x/NjAwLTMuanBnL2pj/cjpjb250ZW50L3Jl/bmRpdGlvbnMvdGh1/bS0xNjAweDEwNjIu/anBlZw", descripcion: "Pantalla grande, 4K, para sala amplia." },
+  { id: 506, nombre: "Samsung 4K UHD Smart TV 50″", precio: 5999, categoria: "tv", tamaño: 50, tipo: "LED",img:"https://imgs.search.brave.com/DfA3FBMFjA2-0Qv9ZTIm0wH-gkyKv_IiRPcGcC2D16Y/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9odHRw/Mi5tbHN0YXRpYy5j/b20vRF9RX05QXzJY/XzgyNTc3OC1NTE04/MTMwNTEzODA2M18x/MjIwMjQtVi53ZWJw", descripcion: "Smart TV básico, buena nitidez." },
+  { id: 507, nombre: "LG UHD AI 4K 55″", precio: 6999, categoria: "tv", tamaño: 55, tipo: "LED",img:"https://imgs.search.brave.com/TJ5fA5Spflnwg9UqAzdokt_Ch3F_WtfcXtSk5qbpJYM/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly93d3cu/bGcuY29tL2NvbnRl/bnQvZGFtL2NoYW5u/ZWwvd2Ntcy9lcy9p/bWFnZXMvdGVsZXZp/c2lvbi81NXV0ODAw/MDZsYV9hZXVfZWVl/c19lc19jL2dhbGxl/cnkvbGFyZ2UwNS0x/NjAwLTMuanBnL2pj/cjpjb250ZW50L3Jl/bmRpdGlvbnMvdGh1/bS0xNjAweDEwNjIu/anBlZw", descripcion: "4K y buen desempeño para ver series y películas." },
+  { id: 508, nombre: "LG Smart TV 32″ AI", precio: 3499, categoria: "tv", tamaño: 32, tipo: "LED",img:"https://imgs.search.brave.com/dyZGz9veGeOLxadOYRkSq2idrAwIGlt9SgwCoKpCFIQ/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly93d3cu/bGcuY29tL2NvbnRl/bnQvZGFtL2NoYW5u/ZWwvd2Ntcy9ici9p/bWFnZXMvdHYvMzJs/cjY1MGJwc2FfYXd6/X2Vzc3BfYnJfYy9n/YWxsZXJ5L2xhcmdl/MDYuanBn",  descripcion: "Pequeña, ideal para espacios reducidos." },
+ 
+  // Relojes (1 ejemplo)
+  { id:601, nombre:"Apple Watch Series 9", precio:8999, categoria:"relojes", img:"https://www.macstoreonline.com.mx/img/sku/WATCH430_Z1.webp", descripcion:"Chip S9 SiP más potente y eficiente. Pantalla Retina siempre activa hasta 2000 nits. Doble toque para control sin contacto. Sensores avanzados: ECG, oxígeno en sangre, temperatura. Seguimiento avanzado de ejercicio y sueño. Resistente al agua hasta 50 metros. Detección de caídas y choques. Hasta 18 horas de batería." },
+   { id: 601, nombre: "Apple Watch Series 9", precio: 8999, categoria: "relojes", descripcion: "Pantalla brillante, sensores avanzados, Siri mejorado.", img:"https://www.macstoreonline.com.mx/img/sku/WATCH430_Z1.webp" },
+  { id: 602, nombre: "Samsung Galaxy Watch 6", precio: 6999, categoria: "relojes", descripcion: "Wear OS, excelente salud y batería.", img:"https://imgs.search.brave.com/ElhvkbMGylJAEVVaVpW2rEVg6Lq27W1inSeDNHvYhZ4/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9odHRw/Mi5tbHN0YXRpYy5j/b20vRF9RX05QXzJY/Xzc0MDExMS1DQlQ4/MTk2MTI1NDcwM18w/MTIwMjUtVi1yZWxv/ai1pbnRlbGlnZW50/ZS1zYW1zdW5nLWdh/bGF4eS13YXRjaC02/LTQ0LW1tLWJsdWV0/b290aC1wbGEud2Vi/cA" },
+  { id: 603, nombre: "Xiaomi Watch S3", precio: 2499, categoria: "relojes", descripcion: "GPS, batería de larga duración.", img:"https://imgs.search.brave.com/P3hQsCm80GwwCEjqEbkLtDpaLrCkKa0KE-4zete6rO4/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9taS1o/b21lLnBsL2Nkbi9z/aG9wL2ZpbGVzLzE0/MjE4X042Mi1UUFVf/U2lsdmVyLVJpZ2h0/U2lkZTQ1LnBuZz92/PTE3MDg4NDM4ODYm/d2lkdGg9MTk0Ng" },
+  { id: 604, nombre: "Amazfit GTR 4", precio: 3999, categoria: "relojes", descripcion: "Gran precisión de sensores y excelente autonomía.", img:"https://imgs.search.brave.com/4BuYAeU9UROpFygHjQXsMH7LLNle92V3V4-I72xLJ7Y/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9ydWtt/aW5pbTIuZmxpeGNh/cnQuY29tL2ltYWdl/LzQxNi80MTYveGlm/MHEvc21hcnR3YXRj/aC9iLzMvZC80Ni1h/MjE2Ni1hbmRyb2lk/LWlvcy1hbWF6Zml0/LXllcy1vcmlnaW5h/bC1pbWFnZ25mdGpn/dHR6bmViLmpwZWc_/cT03MCZjcm9wPWZh/bHNl" },
+  { id: 605, nombre: "Huawei Watch GT 4", precio: 4599, categoria: "relojes", descripcion: "Diseño premium y batería sobresaliente.", img:"https://imgs.search.brave.com/KqSocyWnoCPp7Ne_XsTw_CqsjcP-rVgYQrbR4RjAKK8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jb25z/dW1lci5odWF3ZWku/Y29tL2NvbnRlbnQv/ZGFtL2h1YXdlaS1j/Ymctc2l0ZS9jb21t/b24vbWt0L3BkcC93/ZWFyYWJsZXMvd2F0/Y2gtZ3Q0L3dldS93/YXRjaC1ndDQucG5n" },
+
+  // Accesorios (1 ejemplo)
+  { id:701, nombre:"Cargador USB-C 65W", precio:499, categoria:"accesorios", img:"https://imgs.search.brave.com/IKtd85WIVg9b-KjrNMHoX4iNL_6BR-CMLZlCmTJZnmU/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NTFUSEpEK2prdUwu/anBn", descripcion:"Cargador de pared compacto de 65W con tecnología GaN. Carga rápida para laptops, tablets y smartphones. Puerto USB-C con Power Delivery 3.0. Protección contra sobrecalentamiento, sobretensión y cortocircuitos. Compatible con MacBook, Dell, HP, Lenovo, iPhone, Samsung y más. Diseño portátil ideal para viajes." },
+    { id: 701, nombre: "Cargador USB-C 25W Samsung", precio: 299, categoria: "accesorios", descripcion: "Carga rápida para móviles modernos.", img:"https://imgs.search.brave.com/eOeTB7esK_l-L1jwKe7TKSqLwCiHFiCaeJxs1O4-rmg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NjFFRnVTaEVtWUwu/anBn" },
+  { id: 702, nombre: "Cable USB-C trenzado 1m", precio: 129, categoria: "accesorios", descripcion: "Duradero y compatible con carga rápida.", img:"https://imgs.search.brave.com/OMgQbA27g8p5QP7xL634XTfWJwheuuzPcesb3anDHa8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9vZml4/bXgudnRleGFzc2V0/cy5jb20vYXJxdWl2/b3MvaWRzLzIwMDY2/My04MDAtYXV0bz92/PTYzODQxNzU5NTQ0/OTg3MDAwMCZ3aWR0/aD04MDAmaGVpZ2h0/PWF1dG8mYXNwZWN0/PXRydWU" },
+  { id: 704, nombre: "Power Bank 20,000 mAh", precio: 649, categoria: "accesorios", descripcion: "Alta capacidad, ideal para viajes.", img:"https://imgs.search.brave.com/iZ842gYYuAetwsZGfpEe5hElUC4DzZD-UaXxyKH-6Uw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9odHRw/Mi5tbHN0YXRpYy5j/b20vRF9RX05QXzJY/Xzg0OTY0NS1NQ083/ODEyNTE4OTAwM18w/ODIwMjQtVi53ZWJw" },
+  { id: 705, nombre: "Hub USB-C con HDMI", precio: 399, categoria: "accesorios", descripcion: "Conecta laptop a monitor y más puertos.", img:"https://imgs.search.brave.com/x_CLADXOK95SIRaQTvkdQInVWVOxTIRZjwEgLGdNXv8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NjFadHBvamJuN0wu/anBn" },
+];
+
+let cart = JSON.parse(localStorage.getItem('miTienda_cart_v1') || '[]');
+let activeCategory = 'todos';
+let visibleProducts = [...products];
+let lastDetailId = null;
+
+function fmt(n){ return n.toLocaleString('es-MX', {style:'currency', currency:'MXN', maximumFractionDigits:0}); }
+
+function renderProducts(list = visibleProducts){
+  const grid = document.getElementById('productosGrid');
+  grid.innerHTML = '';
+  if(!list.length){
+    document.getElementById('emptyNotice').style.display = 'block';
+    return;
+  } else document.getElementById('emptyNotice').style.display = 'none';
+
+  list.forEach(p => {
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="thumb"><img src="${p.img}" alt="${p.nombre}"></div>
+      <div class="title">${p.nombre}</div>
+      <div class="muted">${p.categoria}</div>
+      <div class="price">${fmt(p.precio)}</div>
+      <div class="btns">
+        <button class="btn ghost" onclick="openDetail(${p.id})">Ver detalles</button>
+        <button class="btn yellow" onclick="addToCart(${p.id})">Agregar</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function filtrar(cat){
+  activeCategory = cat;
+  document.getElementById('catSelect').value = cat;
+  if(cat === 'todos'){
+    visibleProducts = [...products];
+  } else {
+    visibleProducts = products.filter(p => p.categoria === cat);
+  }
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  if(q) visibleProducts = visibleProducts.filter(p => p.nombre.toLowerCase().includes(q) || p.descripcion?.toLowerCase().includes(q));
+  renderProducts();
+}
+
+function buscar(){
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  let list = (activeCategory === 'todos') ? products : products.filter(p => p.categoria === activeCategory);
+  if(q) list = list.filter(p => p.nombre.toLowerCase().includes(q) || (p.descripcion && p.descripcion.toLowerCase().includes(q)));
+  visibleProducts = list;
+  renderProducts();
+}
+
+function openDetail(id){
+  const p = products.find(x => x.id === id);
+  if(!p) return;
+  lastDetailId = id;
+  
+  // Obtener productos similares (misma categoría, diferente ID)
+  const similares = products.filter(x => x.categoria === p.categoria && x.id !== p.id).slice(0, 4);
+  
+  const body = document.getElementById('detailBody');
+  body.innerHTML = `
+    <div class="product-main">
+      <div class="product-image">
+        <img src="${p.img}" alt="${p.nombre}">
+      </div>
+      <div class="product-info">
+        <div class="category">${p.categoria}</div>
+        <h2>${p.nombre}</h2>
+        <div class="price">${fmt(p.precio)}</div>
+        <div class="description">${p.descripcion || 'Sin descripción disponible.'}</div>
+        <div class="product-actions">
+          <button class="btn yellow" onclick="addToCart(${p.id}); cerrarDetalle();" style="flex:1">
+            Agregar al carrito
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    ${similares.length > 0 ? `
+      <div class="similar-section">
+        <h3>Productos similares</h3>
+        <div class="similar-grid">
+          ${similares.map(s => `
+            <div class="similar-card" onclick="openDetail(${s.id})">
+              <img src="${s.img}" alt="${s.nombre}">
+              <div class="info">
+                <div class="name">${s.nombre}</div>
+                <div class="price">${fmt(s.precio)}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : ''}
+  `;
+  
+  document.getElementById('detailModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarDetalle(){
+  document.getElementById('detailModal').classList.remove('show');
+  document.body.style.overflow = 'auto';
+}
+
+function closeDetailIfBackdrop(e){
+  if(e.target.id === 'detailModal') cerrarDetalle();
+}
+
+function addToCart(id, qty = 1){
+  const idx = cart.findIndex(i => i.id === id);
+  if(idx > -1) cart[idx].qty += qty;
+  else cart.push({id, qty});
+  persistCart();
+  toast('Producto agregado al carrito');
+  updateCartUI();
+}
+
+function persistCart(){
+  localStorage.setItem('miTienda_cart_v1', JSON.stringify(cart));
+}
+
+function toggleCart(){
+  const panel = document.getElementById('cartPanel');
+  panel.classList.toggle('show');
+}
+
+function updateCartUI(){
+  const count = cart.reduce((s,i)=>s+i.qty,0);
+  document.getElementById('cartCount').textContent = count;
+
+  const list = document.getElementById('cartItems');
+  list.innerHTML = '';
+  if(!cart.length){
+    list.innerHTML = '<div style="padding:12px;color:var(--muted)">Tu carrito está vacío</div>';
+    document.getElementById('cartTotal').textContent = fmt(0);
+    return;
+  }
+
+  let total = 0;
+  cart.forEach(item => {
+    const p = products.find(x => x.id === item.id);
+    const row = document.createElement('div');
+    row.className = 'cart-row';
+    row.innerHTML = `
+      <img src="${p.img}" alt="${p.nombre}">
+      <div class="meta">
+        <div style="font-weight:700">${p.nombre}</div>
+        <div class="muted">${fmt(p.precio)}</div>
+        <div class="qty" style="margin-top:6px">
+          <button onclick="changeQty(${p.id}, -1)">-</button>
+          <div style="min-width:28px;text-align:center">${item.qty}</div>
+          <button onclick="changeQty(${p.id}, 1)">+</button>
+          <button style="margin-left:8px;background:transparent;border:0;color:#c00;cursor:pointer" onclick="removeItem(${p.id})">Eliminar</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(row);
+    total += p.precio * item.qty;
+  });
+  document.getElementById('cartTotal').textContent = fmt(total);
+}
+
+function changeQty(id, delta){
+  const idx = cart.findIndex(i => i.id === id);
+  if(idx === -1) return;
+  cart[idx].qty += delta;
+  if(cart[idx].qty <= 0) cart.splice(idx,1);
+  persistCart();
+  updateCartUI();
+}
+
+function removeItem(id){
+  cart = cart.filter(i => i.id !== id);
+  persistCart();
+  updateCartUI();
+}
+
+function vaciarCarrito(){
+  if(!confirm('¿Vaciar todo el carrito?')) return;
+  cart = [];
+  persistCart();
+  updateCartUI();
+}
+
+function checkout(){
+  if(!cart.length){ alert('Tu carrito está vacío'); return; }
+  alert('¡Compra registrada!');
+  cart = [];
+  persistCart();
+  updateCartUI();
+  toggleCart();
+}
+
+let toastTimer = null;
+function toast(msg){
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.position='fixed';
+  t.style.left='50%';
+  t.style.transform='translateX(-50%)';
+  t.style.bottom='24px';
+  t.style.background='rgba(17,17,17,0.94)';
+  t.style.color='white';
+  t.style.padding='10px 14px';
+  t.style.borderRadius='8px';
+  t.style.zIndex=9999;
+  document.body.appendChild(t);
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.remove(); },2000);
+}
+
+function resetView(){
+  document.getElementById('q').value='';
+  filtrar('todos');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function aplicarCategoriaDesdeSelect(){
+  const val = document.getElementById('catSelect').value;
+  filtrar(val);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderProducts();
+  updateCartUI();
+});
+</script>
+
+</body>
+</html>
